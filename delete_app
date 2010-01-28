@@ -1,0 +1,39 @@
+#! /bin/bash
+
+if [ -z "$1" ]; then
+  echo "Usage: delete_app [app_name]"
+  exit
+fi
+
+app_name=$1
+
+if [[ ! -d "/var/rails/$app_name" ]]; then
+  echo "Application $app_name doesn't exit"
+  exit
+fi
+
+if [[ "$2" != "--force" ]]; then
+	echo "This will delete your app $app_name and restart Apache."
+	read -n1 -p "Are you sure? (y/n) " 
+	echo ""
+
+	if [[ $REPLY != [yY] ]]; then
+	  echo "Aborted."
+	  exit
+	fi
+fi
+
+echo "Deleting app at /var/rails/$app_name..."
+cd /var/rails/$app_name
+app_dns=$(cat /var/webbynode/mappings/$app_name.conf)
+
+cd /var/rails
+rm -fR $app_name
+
+echo "Removing vHost for $app_name ($app_dns)..."
+cd /etc/apache2/phd-sites
+rm $app_dns
+rm /var/webbynode/mappings/$app_name.conf
+
+echo "Restarting Apache..."
+/etc/init.d/apache2 restart > /dev/null 2>&1

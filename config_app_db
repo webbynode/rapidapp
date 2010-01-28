@@ -1,0 +1,7 @@
+#! /bin/bash
+# creates the app database
+mysqladmin -u root -p"teste" create $1
+
+# creates the app user
+echo "CREATE USER $1"|mysql -u root -pteste $1
+echo "GRANT ALL PRIVILEGES ON $1.* TO '$1'@'localhost' IDENTIFIED BY 'teste'; FLUSH PRIVILEGES;" |mysql -u root -pteste $1
